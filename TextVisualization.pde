@@ -54,6 +54,7 @@ void buildLetterObjects(){
     int totalSize = 0;
     int maxLength = 0;
     int minLength = 200;
+    println("Number of projects:", textData.size());
     
     // Get min size of nounphrases
     for (int i = 0; i < textData.size(); i++) {
@@ -64,32 +65,44 @@ void buildLetterObjects(){
     println("Min size of nounphrases:", minLength);
 
     // Get total number of letters based on minLength of nounphrase
-
     for (int i = 0; i < textData.size(); ++i) {
         JSONObject thisProject = textData.getJSONObject(i);
         String title = thisProject.getString("title");
         JSONArray nounphrases = thisProject.getJSONArray("nounphrases");
-        minLength = min(minLength, nounphrases.size());
-        maxLength = max(maxLength, nounphrases.size());
         totalSize += title.length();
-        for (int j = 0; j < nounphrases.size(); ++j) {
+        for (int j = 0; j < minLength; ++j) {
             totalSize += nounphrases.getString(j).length();
         }
     }
-    println("Min size:", minLength);
-    println("Total size:", totalSize);
+    println("Total number of letters:", totalSize);
+
+    // Build letter objects based on minLength and totalSize
     letterObjects = new LetterObject[totalSize];
     int xPos = -50;
     int yPos = 0;
     int counter = 0;
-    for (int i = 0; i < maxLength; i++){
+    int getProjectTitle = 0;
+    for (int i = 0; i < minLength; i++){
         for (int j = 0; j < textData.size(); j++){
             JSONObject thisProject = textData.getJSONObject(j);
             JSONArray nounphrases = thisProject.getJSONArray("nounphrases");
-            String title = thisProject.getString("title");
+            if (j % 4 == 0){
+                String title = textData.getJSONObject(getProjectTitle).getString("title");
+                String thisTitle[] = title.split("");
+                for (int k = 0; k < thisTitle.length; ++k) {
+                    if (xPos > 230){
+                        xPos = 0;
+                        yPos += 1;
+                    }
+                    letterObjects[counter] = new LetterObject(thisTitle[k].toUpperCase(), xPos, yPos, k, 0.5);
+                    xPos = xPos + 1;
+                    counter += 1;
+                }
+                xPos = xPos + 2;
+                getProjectTitle += 1;
+            }
             if (nounphrases.size() > i){
                 String thisPhrase[] = nounphrases.getString(i).split("");
-                xPos = xPos + 2;
                 for (int k = 0; k < thisPhrase.length; ++k) {
                     if (xPos > 230){
                         xPos = 0;
@@ -99,20 +112,8 @@ void buildLetterObjects(){
                     xPos = xPos + 1;
                     counter += 1;
                 }
-            }
-            // println(title);
-            String thisTitle[] = title.split("");
-            xPos = xPos + 2;
-            for (int k = 0; k < thisTitle.length; ++k) {
-                if (xPos > 230){
-                    xPos = 0;
-                    yPos += 1;
-                }
-                letterObjects[counter] = new LetterObject(thisTitle[k].toUpperCase(), xPos, yPos, k, 0.5);
-                xPos = xPos + 1;
-                counter += 1;
-            }
-            // println(counter);
+                xPos = xPos + 2;
+            }            
         }
     }
 }
