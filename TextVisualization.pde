@@ -10,28 +10,34 @@ PFont regularFont;
 
 // Global visualization variables
 int textStartingX = -10;
-int textEndingX = 510;
+int textEndingX = 1440;
 
 // Global letter variables
-int velocityOfChange = 60;
+int velocityOfChange = 60; // Inverse (smaller numbers == faster) 80 == cycle of 500 frames
 int lettersOnDisplay = 5;
+float letterWidthFactor = 7.5;
+float lineHeightFactor = 16;
+float minTextOpacity = 0.1;
 
 // Global word variables
 float rectOpacity = 0;
+float textOpacity = 0;
 float maxRectOpacity = 0.75;
 float opacityRateChange;
+float textOpacityChange;
 int startCounter = 0;
 boolean drawWords = false;
-float highlightInterval = 400;
-float highlightDuration = 100;
+float highlightInterval = 1000;
+float highlightDuration = 180;
+int startingFrameHighlight = 150;
 String highlightedProject;
 
 void setup(){
     textData = loadJSONArray("data/projects.json");
-    lightFont = createFont("RobotoMono-Light.ttf", 14);
-    regularFont = createFont("RobotoMono-Regular.ttf", 14);
+    lightFont = createFont("RobotoMono-Light.ttf", 13);
+    regularFont = createFont("RobotoMono-Regular.ttf", 13);
     textFont(regularFont);
-    size(1700, 500);
+    size(1440, 270);
     colorMode(HSB, 360, 100, 100, 1);
     println("Building objects...");
     // buildTextObjects();
@@ -40,6 +46,7 @@ void setup(){
     println("Done building letter objects...");
     pixelDensity(2);
     opacityRateChange = maxRectOpacity / (highlightDuration / 3);
+    textOpacityChange = 1 / (highlightDuration / 3);
     // noLoop();
 }
 
@@ -98,8 +105,8 @@ void buildLetterObjects(){
                 String title = textData.getJSONObject(getProjectTitle).getString("title");
                 String thisTitle[] = title.split("");
                 for (int k = 0; k < thisTitle.length; ++k) {
-                    if (xPos > textEndingX){
-                        xPos = 0;
+                    if (xPos > (textEndingX / letterWidthFactor)){
+                        xPos = textStartingX;
                         yPos += 1;
                     }
                     letterObjects[counter] = new LetterObject(thisTitle[k].toUpperCase(), xPos, yPos, k, 0.5, true, title);
@@ -113,8 +120,8 @@ void buildLetterObjects(){
             if (nounphrases.size() > i){
                 String thisPhrase[] = nounphrases.getString(i).split("");
                 for (int k = 0; k < thisPhrase.length; ++k) {
-                    if (xPos > 230){
-                        xPos = 0;
+                    if (xPos > (textEndingX / letterWidthFactor)){
+                        xPos = textStartingX;
                         yPos += 1;
                     }
                     letterObjects[counter] = new LetterObject(thisPhrase[k].toUpperCase(), xPos, yPos, k, 0.5, false, projectTitle);
@@ -130,38 +137,61 @@ void buildLetterObjects(){
 void drawLetters(){
     fill(255);
     for (LetterObject letterObject : letterObjects) {
-        float opacityValue = sin(float(frameCount) / velocityOfChange - float(letterObject.letterPos) / lettersOnDisplay);
-        if (opacityValue <= 0){
-            opacityValue = 0;
+        // float opacityValue = cos(letterObject.letterPos);
+        float opacityValue = cos(float(frameCount) / velocityOfChange - float(letterObject.letterPos) / lettersOnDisplay);
+        opacityValue = map(opacityValue, -1, 1, -0.15, 1);
+        if (opacityValue <= minTextOpacity){
+            opacityValue = minTextOpacity;
         }
+        // println(opacityValue);
         letterObject.opacity = opacityValue;
         fill(0, 0, 100, letterObject.opacity);
-        text(letterObject.letter, letterObject.xPos * 8, letterObject.yPos * 16);
+        text(letterObject.letter, letterObject.xPos * letterWidthFactor, letterObject.yPos * lineHeightFactor);
     }
 }
 
 void drawWords(String projectTitle){
-    println(projectTitle);
+    // println(projectTitle);
     fill(0, 0, 0, rectOpacity);
     rect(0, 0, width, height);
-    // println(rectOpacity);
     if (startCounter < highlightDuration / 3){
         rectOpacity += opacityRateChange;
+        textOpacity += textOpacityChange;
     }
     else if (startCounter > highlightDuration / 3 * 2){
         rectOpacity -= opacityRateChange;
+        textOpacity -= textOpacityChange;
     }
     else {
         rectOpacity = maxRectOpacity;
+        textOpacity = 1;
+    }
+    for (LetterObject letterObject : letterObjects) {
+        if (letterObject.projectTitle == projectTitle){
+            if (letterObject.isTitle == true){
+                fill(32, 100, 100, textOpacity);
+            }
+            else {
+                fill(0, 0, 100, textOpacity);
+            }
+            text(letterObject.letter, letterObject.xPos * letterWidthFactor, letterObject.yPos * lineHeightFactor);
+        }
     }
     startCounter += 1;
 }
 
 void draw(){
+    float testValue = sin(float(frameCount) / velocityOfChange);
+    if (testValue < minTextOpacity){
+        testValue = minTextOpacity;
+    }
+    // println(testValue);
+    // println(frameCount);
     background(0);
     drawLetters();
-    if (frameCount % highlightInterval == 0){
+    if ((frameCount - startingFrameHighlight) % highlightInterval == 0){
         rectOpacity = 0;
+        textOpacity = 0;
         startCounter = 0;
         drawWords = true;
         highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
@@ -172,39 +202,11 @@ void draw(){
     if (startCounter == highlightDuration){
         drawWords = false;
         rectOpacity = 0;
+        textOpacity = 0;
     }
-    // println(frameCount % 10);
-    // int textLength = -50;
-    // int rowNumber = 10;
-    // for (int i = 0; i < 2; ++i) {
-    //     for (TextObject textObject : textObjects){
-    //         fill(textObject.textFill);
-    //         if (textObject.nounphrases.size() > i){
-    //             String thisText[] = textObject.nounphrases.getString(i).split("");
-    //             text(textObject.nounphrases.getString(i).toUpperCase(), textLength, rowNumber);
-    //             textLength += textObject.nounphrases.getString(i).length() * 9;
-    //             if (textLength > 1000){
-    //                 textLength = 0;
-    //                 rowNumber += 12;
-    //             }
-    //         }
-    //         else {}
-    //     }
-    // }    
-    // if ((frameCount % 100) == 0){
-    //     int counter = 0;
-    //     for (TextObject textObject : textObjects){
-    //         if (counter == (frameCount/100)){
-    //             textObject.textFill = 255;
-    //         }
-    //         else {
-    //             textObject.textFill = 100;
-    //         }
-    //         counter += 1;
-    //     }
-    // }
-    // saveFrame("frames/####.png");
-    if (frameCount == 5000){
+    saveFrame("frames/####.png");
+    if (frameCount == 3600){
         exit();
     }
+    // println(frameRate);
 }
