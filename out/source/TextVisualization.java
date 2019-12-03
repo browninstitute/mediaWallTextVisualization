@@ -18,10 +18,15 @@ public class TextVisualization extends PApplet {
 JSONArray textData;
 TextObject[] textObjects;
 LetterObject [] letterObjects;
+String [] listOfProjectTitles;
 
 // Loading fonts
 PFont lightFont;
 PFont regularFont;
+
+// Global visualization variables
+int textStartingX = -10;
+int textEndingX = 510;
 
 // Global letter variables
 int velocityOfChange = 60;
@@ -35,6 +40,7 @@ int startCounter = 0;
 boolean drawWords = false;
 float highlightInterval = 400;
 float highlightDuration = 100;
+String highlightedProject;
 
 public void setup(){
     textData = loadJSONArray("data/projects.json");
@@ -44,8 +50,8 @@ public void setup(){
     
     colorMode(HSB, 360, 100, 100, 1);
     println("Building objects...");
-    buildTextObjects();
-    println("Done building text objects...");
+    // buildTextObjects();
+    // println("Done building text objects...");
     buildLetterObjects();
     println("Done building letter objects...");
     
@@ -70,6 +76,7 @@ public void buildLetterObjects(){
     int totalSize = 0;
     int maxLength = 0;
     int minLength = 200;
+    listOfProjectTitles = new String[textData.size()];
     println("Number of projects:", textData.size());
     
     // Get min size of nounphrases
@@ -84,6 +91,7 @@ public void buildLetterObjects(){
     for (int i = 0; i < textData.size(); ++i) {
         JSONObject thisProject = textData.getJSONObject(i);
         String title = thisProject.getString("title");
+        listOfProjectTitles[i] = title;
         JSONArray nounphrases = thisProject.getJSONArray("nounphrases");
         totalSize += title.length();
         for (int j = 0; j < minLength; ++j) {
@@ -94,7 +102,7 @@ public void buildLetterObjects(){
 
     // Build letter objects based on minLength and totalSize
     letterObjects = new LetterObject[totalSize];
-    int xPos = -50;
+    int xPos = textStartingX;
     int yPos = 0;
     int counter = 0;
     int getProjectTitle = 0;
@@ -104,21 +112,20 @@ public void buildLetterObjects(){
             JSONArray nounphrases = thisProject.getJSONArray("nounphrases");
             if (j % 4 == 0){
                 String title = textData.getJSONObject(getProjectTitle).getString("title");
-                // String title = thisProject.getString("title");
-                println(title);
                 String thisTitle[] = title.split("");
                 for (int k = 0; k < thisTitle.length; ++k) {
-                    if (xPos > 230){
+                    if (xPos > textEndingX){
                         xPos = 0;
                         yPos += 1;
                     }
-                    letterObjects[counter] = new LetterObject(thisTitle[k].toUpperCase(), xPos, yPos, k, 0.5f);
+                    letterObjects[counter] = new LetterObject(thisTitle[k].toUpperCase(), xPos, yPos, k, 0.5f, true, title);
                     xPos = xPos + 1;
                     counter += 1;
                 }
                 xPos = xPos + 2;
                 getProjectTitle += 1;
             }
+            String projectTitle = thisProject.getString("title");
             if (nounphrases.size() > i){
                 String thisPhrase[] = nounphrases.getString(i).split("");
                 for (int k = 0; k < thisPhrase.length; ++k) {
@@ -126,14 +133,12 @@ public void buildLetterObjects(){
                         xPos = 0;
                         yPos += 1;
                     }
-                    letterObjects[counter] = new LetterObject(thisPhrase[k].toUpperCase(), xPos, yPos, k, 0.5f);
+                    letterObjects[counter] = new LetterObject(thisPhrase[k].toUpperCase(), xPos, yPos, k, 0.5f, false, projectTitle);
                     xPos = xPos + 1;
                     counter += 1;
                 }
                 xPos = xPos + 2;
-            }
-            // println(title);
-            
+            }            
         }
     }
 }
@@ -151,10 +156,11 @@ public void drawLetters(){
     }
 }
 
-public void drawWords(){
+public void drawWords(String projectTitle){
+    println(projectTitle);
     fill(0, 0, 0, rectOpacity);
     rect(0, 0, width, height);
-    println(rectOpacity);
+    // println(rectOpacity);
     if (startCounter < highlightDuration / 3){
         rectOpacity += opacityRateChange;
     }
@@ -174,9 +180,10 @@ public void draw(){
         rectOpacity = 0;
         startCounter = 0;
         drawWords = true;
+        highlightedProject = listOfProjectTitles[PApplet.parseInt(random(0, listOfProjectTitles.length))];
     }
     if (drawWords == true){
-        drawWords();
+        drawWords(highlightedProject);
     }
     if (startCounter == highlightDuration){
         drawWords = false;
@@ -218,15 +225,18 @@ public void draw(){
     }
 }
 class LetterObject {
-    String letter;
+    String letter, projectTitle;
     int xPos, yPos, letterPos;
     float opacity;
-    LetterObject(String _letter, int _xPos, int _yPos, int _letterPos, float _opacity){
+    boolean isTitle;
+    LetterObject(String _letter, int _xPos, int _yPos, int _letterPos, float _opacity, boolean _isTitle, String _projectTitle){
         letter = _letter;
         xPos = _xPos;
         yPos = _yPos;
         letterPos = _letterPos;
         opacity = _opacity;
+        isTitle = _isTitle;
+        projectTitle = _projectTitle;
     }
 }
 class TextObject {
