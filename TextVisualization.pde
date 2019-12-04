@@ -18,7 +18,7 @@ PFont regularFont;
 
 // Global visualization variables
 int textStartingX = 1;
-int textEndingX = 1430;
+int textEndingX = 1700;
 
 // Global letter variables
 int velocityOfChange = 60; // Inverse (smaller numbers == faster) 80 == cycle of 500 frames
@@ -41,13 +41,14 @@ float highlightDuration = 180;
 int startingFrameHighlight = 30;
 String highlightedProject;
 String previouslyHighlightedProject = "";
+int middleSpace = 138;
 
 void setup(){
     allData = loadJSONArray("data/projects.json");
     lightFont = createFont("RobotoMono-Light.ttf", fontSize);
     regularFont = createFont("RobotoMono-Regular.ttf", fontSize);
     textFont(regularFont);
-    size(1440, 270);
+    size(1716, 270);
     colorMode(HSB, 360, 100, 100, 1);
     println("Building objects...");
     // buildTextObjects();
@@ -237,8 +238,20 @@ void draw(){
         rectOpacity = 0;
         textOpacity = 0;
     }
-    saveFrame("frames/####.png");
+    // saveFrame("frames/####.png");
+    PImage partialSave1 = get(0, 0, 480 * 2, 270 * 2);
+    PImage partialSave2 = get((480 + middleSpace) * 2, 0, 480 * 2, 270 * 2);
+    PImage partialSave3 = get((480 * 2 + middleSpace * 2) * 2, 0, 480 * 2, 270 * 2);
+    image(partialSave1, 0, 0, 480, 270);
+    image(partialSave2, 480, 0, 480, 270);
+    image(partialSave3, 480 * 2, 0, 480, 270);
+    // partialSave1.save("partialSave1.png");
+    // partialSave2.save("partialSave2.png");
+    // partialSave3.save("partialSave3.png");
+    PImage partialSave4 = get(0, 0, 1440 * 2, 270 * 2);
+    partialSave4.save("partialSave4.png");
     println("Saved frame:",frameCount);
+    save("total.png");
     if (frameCount == 7200){
         exit();
     }
