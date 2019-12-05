@@ -19,6 +19,9 @@ PFont regularFont;
 // Global visualization variables
 int textStartingX = 1;
 int textEndingX = 1700;
+int break1Start, break1End, break2Start, break2End;
+int middleSpace = 138;
+int singleScreenDimension = 480;
 
 // Global letter variables
 int velocityOfChange = 60; // Inverse (smaller numbers == faster) 80 == cycle of 500 frames
@@ -36,12 +39,13 @@ float opacityRateChange;
 float textOpacityChange;
 int startCounter = 0;
 boolean drawWords = false;
+boolean onEdge = true;
+boolean sameAsPrevious = true;
 float highlightInterval = 740;
 float highlightDuration = 180;
 int startingFrameHighlight = 30;
 String highlightedProject;
 String previouslyHighlightedProject = "";
-int middleSpace = 138;
 
 void setup(){
     allData = loadJSONArray("data/projects.json");
@@ -58,6 +62,10 @@ void setup(){
     pixelDensity(2);
     opacityRateChange = maxRectOpacity / (highlightDuration / 3);
     textOpacityChange = 1 / (highlightDuration / 3);
+    break1Start = singleScreenDimension;
+    break1End = break1Start + middleSpace;
+    break2Start = break1End + singleScreenDimension;
+    break2End = break2Start + middleSpace;
     // noLoop();
 }
 
@@ -209,12 +217,10 @@ void drawWords(String projectTitle){
 }
 
 void draw(){
-    float testValue = sin(float(frameCount) / velocityOfChange);
-    if (testValue < minTextOpacity){
-        testValue = minTextOpacity;
-    }
-    // println(testValue);
-    // println(frameCount);
+    // float testValue = sin(float(frameCount) / velocityOfChange);
+    // if (testValue < minTextOpacity){
+    //     testValue = minTextOpacity;
+    // }
     background(0);
     drawLetters();
     if ((frameCount - startingFrameHighlight) % highlightInterval == 0){
@@ -222,12 +228,49 @@ void draw(){
         textOpacity = 0;
         startCounter = 0;
         drawWords = true;
-        highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
-        println(highlightedProject);
-        while (highlightedProject.equals(previouslyHighlightedProject)){
+        onEdge = true;
+        sameAsPrevious = true;
+        while (onEdge || sameAsPrevious){
             highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
             println(highlightedProject);
+            if (highlightedProject.equals(previouslyHighlightedProject)){
+                sameAsPrevious = true;
+                println("Same as previous!");
+            }
+            else {
+                sameAsPrevious = false;
+            }
+            int minXpos = 2000;
+            int maxXpos = 0;
+            int firstXpos = 0;
+            int lastXpos = 0;
+            boolean isFirstLetterPosSet = false;
+            for (LetterObject letterObject : letterObjects) {
+                if (letterObject.projectTitle == projectTitle){
+                    minXpos = min(minXpos, letterObject.xPos);
+                    maxXpos = max(maxXpos, letterObject.xPos);
+                    lastXpos = letterObject.xPos;
+                    if (isFirstLetterPosSet == false){
+                        firstXpos = letterObject.xPos;
+                    }
+                    else{}
+                }
+            }
+            if ((minXpos < break1Start && maxXpos > break1Start) || (minXpos < break1End && maxXpos > break1End) || (minXpos < break2Start && maxXpos > break2Start) || (minXpos < break2End && maxXpos > break2End) || ( firstXpos > lastXpos)){
+                onEdge == true;
+                println("On edge!");
+            }
+            else {
+                onEdge == false;
+            }
         }
+        
+        // highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
+        println(highlightedProject);
+        // while (highlightedProject.equals(previouslyHighlightedProject)){
+        //     highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
+        //     println(highlightedProject);
+        // }
         previouslyHighlightedProject = highlightedProject;
     }
     if (drawWords == true){
@@ -245,13 +288,9 @@ void draw(){
     image(partialSave1, 0, 0, 480, 270);
     image(partialSave2, 480, 0, 480, 270);
     image(partialSave3, 480 * 2, 0, 480, 270);
-    // partialSave1.save("partialSave1.png");
-    // partialSave2.save("partialSave2.png");
-    // partialSave3.save("partialSave3.png");
     PImage partialSave4 = get(0, 0, 1440 * 2, 270 * 2);
-    partialSave4.save("partialSave4.png");
+    // partialSave4.save("frames/CutFrames_####.png");
     println("Saved frame:",frameCount);
-    save("total.png");
     if (frameCount == 7200){
         exit();
     }
