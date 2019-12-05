@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream; 
 import java.io.IOException; 
 
-public class TextVisualization extends PApplet {
+public class TextVisualization_NoBreaks extends PApplet {
 
 // Classes
 class LetterObject {
@@ -52,7 +52,7 @@ PFont regularFont;
 
 // Global visualization variables
 int textStartingX = 1;
-int textEndingX = 1700;
+int textEndingX = 1425;
 int break1Start, break1End, break2Start, break2End;
 int middleSpace = 138;
 int singleScreenDimension = 480;
@@ -60,9 +60,9 @@ int singleScreenDimension = 480;
 // Global letter variables
 int velocityOfChange = 60; // Inverse (smaller numbers == faster) 80 == cycle of 500 frames
 int lettersOnDisplay = 5;
-float letterWidthFactor = 9.5f;
-float lineHeightFactor = 21.5f;
-int fontSize = 16;
+float letterWidthFactor = 9.3f;
+float lineHeightFactor = 18.7f;
+int fontSize = 15;
 float minTextOpacity = 0.1f;
 
 // Global word variables
@@ -89,8 +89,6 @@ public void setup(){
     
     colorMode(HSB, 360, 100, 100, 1);
     println("Building objects...");
-    // buildTextObjects();
-    // println("Done building text objects...");
     buildLetterObjects();
     println("Done building letter objects...");
     
@@ -100,7 +98,6 @@ public void setup(){
     break1End = break1Start + middleSpace;
     break2Start = break1End + singleScreenDimension;
     break2End = break2Start + middleSpace;
-    // noLoop();
 }
 
 public void buildLetterObjects(){
@@ -190,7 +187,6 @@ public void buildLetterObjects(){
 public void drawLetters(){
     fill(255);
     for (LetterObject letterObject : letterObjects) {
-        // float opacityValue = cos(letterObject.letterPos);
         float opacityValue = cos(PApplet.parseFloat(frameCount) / velocityOfChange - PApplet.parseFloat(letterObject.letterPos) / lettersOnDisplay);
         opacityValue = map(opacityValue, -1, 1, -0.15f, 1);
         if (opacityValue <= minTextOpacity){
@@ -203,7 +199,6 @@ public void drawLetters(){
 }
 
 public void drawWords(String projectTitle){
-    // println(projectTitle);
     fill(0, 0, 0, rectOpacity);
     rect(0, 0, width, height);
     if (startCounter < highlightDuration / 3){
@@ -252,8 +247,6 @@ public void draw(){
             else {
                 sameAsPrevious = false;
             }
-            // int minXpos = 2000;
-            // int maxXpos = 0;
             int firstXpos = 0;
             int lastXpos = 0;
             boolean isFirstLetterPosSet = false;
@@ -266,14 +259,9 @@ public void draw(){
                         }
                         isFirstLetterPosSet = true;
                     }
-                    // println(letterObject.letter);
-                    // minXpos = min(minXpos, letterObject.xPos);
-                    // maxXpos = max(maxXpos, letterObject.xPos);
                 }
             }
-            // println("break1Start:",break1Start,"break1End:",break1End,"break2Start:",break2Start,"break2End:",break2End);
-            // println("firstXpos:",firstXpos * letterWidthFactor,"lastXpos:",lastXpos * letterWidthFactor);
-            if ((firstXpos * letterWidthFactor < break1Start && lastXpos * letterWidthFactor > break1Start) || (firstXpos * letterWidthFactor < break1End && lastXpos * letterWidthFactor > break1End) || (firstXpos * letterWidthFactor < break2Start && lastXpos * letterWidthFactor > break2Start) || (firstXpos * letterWidthFactor < break2End && lastXpos * letterWidthFactor > break2End) || (firstXpos > lastXpos)){
+            if ((firstXpos * letterWidthFactor < singleScreenDimension && lastXpos * letterWidthFactor > singleScreenDimension) || (firstXpos * letterWidthFactor < singleScreenDimension * 2 && lastXpos * letterWidthFactor > singleScreenDimension * 2) || (firstXpos > lastXpos)){
                 onEdge = true;
                 println("On edge!");
             }
@@ -281,13 +269,7 @@ public void draw(){
                 onEdge = false;
             }
         }
-        
-        // highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
         println(highlightedProject);
-        // while (highlightedProject.equals(previouslyHighlightedProject)){
-        //     highlightedProject = listOfProjectTitles[int(random(0, listOfProjectTitles.length))];
-        //     println(highlightedProject);
-        // }
         previouslyHighlightedProject = highlightedProject;
     }
     if (drawWords == true){
@@ -298,16 +280,7 @@ public void draw(){
         rectOpacity = 0;
         textOpacity = 0;
     }
-    // saveFrame("frames/####.png");
-    PImage partialSave1 = get(0, 0, singleScreenDimension * 2, 270 * 2);
-    PImage partialSave2 = get((singleScreenDimension + middleSpace) * 2, 0, singleScreenDimension * 2, 270 * 2);
-    PImage partialSave3 = get((singleScreenDimension * 2 + middleSpace * 2) * 2, 0, singleScreenDimension * 2, 270 * 2);
-    image(partialSave1, 0, 0, singleScreenDimension, 270);
-    image(partialSave2, singleScreenDimension, 0, singleScreenDimension, 270);
-    image(partialSave3, singleScreenDimension * 2, 0, singleScreenDimension, 270);
-    PImage partialSave4 = get(0, 0, 1440 * 2, 270 * 2);
-    String outputFileName = "frames/CutFrames_" + str(frameCount) + ".png";
-    partialSave4.save(outputFileName);
+    saveFrame("frames/####.png");
     println("Saved frame:",frameCount);
     if (frameCount == 7200){
         exit();
@@ -315,9 +288,9 @@ public void draw(){
 }
 
 
-  public void settings() {  size(1716, 270);  pixelDensity(2); }
+  public void settings() {  size(1440, 270);  pixelDensity(2); }
   static public void main(String[] passedArgs) {
-    String[] appletArgs = new String[] { "TextVisualization" };
+    String[] appletArgs = new String[] { "TextVisualization_NoBreaks" };
     if (passedArgs != null) {
       PApplet.main(concat(appletArgs, passedArgs));
     } else {
