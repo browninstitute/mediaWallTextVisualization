@@ -1,9 +1,25 @@
+// Classes
+class LetterObject {
+    String letter, projectTitle;
+    int xPos, yPos, letterPos;
+    float opacity;
+    boolean isTitle;
+    LetterObject(String _letter, int _xPos, int _yPos, int _letterPos, float _opacity, boolean _isTitle, String _projectTitle){
+        letter = _letter;
+        xPos = _xPos;
+        yPos = _yPos;
+        letterPos = _letterPos;
+        opacity = _opacity;
+        isTitle = _isTitle;
+        projectTitle = _projectTitle;
+    }
+}
+
 // Import libraries
 import java.util.Arrays;
 
 // Data arrays and objects
 JSONArray textData;
-TextObject[] textObjects;
 LetterObject [] letterObjects;
 String [] listOfProjectTitles;
 String selectedYear_1 = "2012-2013";
@@ -26,9 +42,9 @@ int singleScreenDimension = 480;
 // Global letter variables
 int velocityOfChange = 60; // Inverse (smaller numbers == faster) 80 == cycle of 500 frames
 int lettersOnDisplay = 5;
-float letterWidthFactor = 8.5;
-float lineHeightFactor = 20;
-int fontSize = 15;
+float letterWidthFactor = 9.5;
+float lineHeightFactor = 21.5;
+int fontSize = 16;
 float minTextOpacity = 0.1;
 
 // Global word variables
@@ -42,8 +58,8 @@ boolean drawWords = false;
 boolean onEdge = true;
 boolean sameAsPrevious = true;
 float highlightInterval = 740;
-float highlightDuration = 180;
-int startingFrameHighlight = 30;
+float highlightDuration = 300;
+int startingFrameHighlight = 10;
 String highlightedProject;
 String previouslyHighlightedProject = "";
 
@@ -69,28 +85,11 @@ void setup(){
     // noLoop();
 }
 
-void buildTextObjects(){
-    textObjects = new TextObject[textData.size()];
-    for (int i = 0; i < textData.size(); ++i) {
-        JSONObject thisProject = textData.getJSONObject(i);
-        String title = thisProject.getString("title");
-        JSONArray team = thisProject.getJSONArray("team");
-        String year = thisProject.getString("year");
-        String description = thisProject.getString("description");
-        JSONArray nounphrases = thisProject.getJSONArray("nounphrases");
-        textObjects[i] = new TextObject(title, team, year, description, nounphrases);
-    }
-}
-
 void buildLetterObjects(){
     // Create subset based on year
     textData = new JSONArray();
     int newCounter = 0;
     for (int i = 0; i < allData.size(); i++){
-        // if (allData.getJSONObject(i).getString("year").equals(selectedYear_1) || allData.getJSONObject(i).getString("year").equals(selectedYear_2)){
-        //     textData.setJSONObject(newCounter, allData.getJSONObject(i));
-        //     newCounter += 1;
-        // }
         if (Arrays.asList(selectedYears).contains(allData.getJSONObject(i).getString("year"))){
             textData.setJSONObject(newCounter, allData.getJSONObject(i));
             newCounter += 1;
@@ -144,6 +143,7 @@ void buildLetterObjects(){
                         xPos = textStartingX;
                         yPos += 1;
                     }
+                    else{}
                     letterObjects[counter] = new LetterObject(thisTitle[k].toUpperCase(), xPos, yPos, k, 0.5, true, title);
                     xPos = xPos + 1;
                     counter += 1;
@@ -151,6 +151,7 @@ void buildLetterObjects(){
                 xPos = xPos + 2;
                 getProjectTitle += 1;
             }
+            else{}
             String projectTitle = thisProject.getString("title");
             if (nounphrases.size() > i){
                 String thisPhrase[] = nounphrases.getString(i).split("");
@@ -164,7 +165,8 @@ void buildLetterObjects(){
                     counter += 1;
                 }
                 xPos = xPos + 2;
-            }   
+            }
+            else{}
             tempCounter += 1;         
         }
     }
@@ -179,6 +181,7 @@ void drawLetters(){
         if (opacityValue <= minTextOpacity){
             opacityValue = minTextOpacity;
         }
+        else{}
         // println(opacityValue);
         letterObject.opacity = opacityValue;
         fill(0, 0, 100, letterObject.opacity);
@@ -217,10 +220,6 @@ void drawWords(String projectTitle){
 }
 
 void draw(){
-    // float testValue = sin(float(frameCount) / velocityOfChange);
-    // if (testValue < minTextOpacity){
-    //     testValue = minTextOpacity;
-    // }
     background(0);
     drawLetters();
     if ((frameCount - startingFrameHighlight) % highlightInterval == 0){
@@ -240,28 +239,33 @@ void draw(){
             else {
                 sameAsPrevious = false;
             }
-            int minXpos = 2000;
-            int maxXpos = 0;
+            // int minXpos = 2000;
+            // int maxXpos = 0;
             int firstXpos = 0;
             int lastXpos = 0;
             boolean isFirstLetterPosSet = false;
             for (LetterObject letterObject : letterObjects) {
-                if (letterObject.projectTitle == projectTitle){
-                    minXpos = min(minXpos, letterObject.xPos);
-                    maxXpos = max(maxXpos, letterObject.xPos);
-                    lastXpos = letterObject.xPos;
-                    if (isFirstLetterPosSet == false){
-                        firstXpos = letterObject.xPos;
+                if (letterObject.projectTitle.equals(highlightedProject)){
+                    if (letterObject.isTitle == true){
+                        lastXpos = letterObject.xPos;
+                        if (isFirstLetterPosSet == false){
+                            firstXpos = letterObject.xPos;
+                        }
+                        isFirstLetterPosSet = true;
                     }
-                    else{}
+                    // println(letterObject.letter);
+                    // minXpos = min(minXpos, letterObject.xPos);
+                    // maxXpos = max(maxXpos, letterObject.xPos);
                 }
             }
-            if ((minXpos < break1Start && maxXpos > break1Start) || (minXpos < break1End && maxXpos > break1End) || (minXpos < break2Start && maxXpos > break2Start) || (minXpos < break2End && maxXpos > break2End) || ( firstXpos > lastXpos)){
-                onEdge == true;
+            // println("break1Start:",break1Start,"break1End:",break1End,"break2Start:",break2Start,"break2End:",break2End);
+            // println("firstXpos:",firstXpos * letterWidthFactor,"lastXpos:",lastXpos * letterWidthFactor);
+            if ((firstXpos * letterWidthFactor < break1Start && lastXpos * letterWidthFactor > break1Start) || (firstXpos * letterWidthFactor < break1End && lastXpos * letterWidthFactor > break1End) || (firstXpos * letterWidthFactor < break2Start && lastXpos * letterWidthFactor > break2Start) || (firstXpos * letterWidthFactor < break2End && lastXpos * letterWidthFactor > break2End) || (firstXpos > lastXpos)){
+                onEdge = true;
                 println("On edge!");
             }
             else {
-                onEdge == false;
+                onEdge = false;
             }
         }
         
@@ -282,16 +286,19 @@ void draw(){
         textOpacity = 0;
     }
     // saveFrame("frames/####.png");
-    PImage partialSave1 = get(0, 0, 480 * 2, 270 * 2);
-    PImage partialSave2 = get((480 + middleSpace) * 2, 0, 480 * 2, 270 * 2);
-    PImage partialSave3 = get((480 * 2 + middleSpace * 2) * 2, 0, 480 * 2, 270 * 2);
-    image(partialSave1, 0, 0, 480, 270);
-    image(partialSave2, 480, 0, 480, 270);
-    image(partialSave3, 480 * 2, 0, 480, 270);
+    PImage partialSave1 = get(0, 0, singleScreenDimension * 2, 270 * 2);
+    PImage partialSave2 = get((singleScreenDimension + middleSpace) * 2, 0, singleScreenDimension * 2, 270 * 2);
+    PImage partialSave3 = get((singleScreenDimension * 2 + middleSpace * 2) * 2, 0, singleScreenDimension * 2, 270 * 2);
+    image(partialSave1, 0, 0, singleScreenDimension, 270);
+    image(partialSave2, singleScreenDimension, 0, singleScreenDimension, 270);
+    image(partialSave3, singleScreenDimension * 2, 0, singleScreenDimension, 270);
     PImage partialSave4 = get(0, 0, 1440 * 2, 270 * 2);
-    // partialSave4.save("frames/CutFrames_####.png");
+    String outputFileName = "frames/CutFrames_" + nf(frameCount, 4) + ".png";
+    partialSave4.save(outputFileName);
     println("Saved frame:",frameCount);
     if (frameCount == 7200){
         exit();
     }
 }
+
+
