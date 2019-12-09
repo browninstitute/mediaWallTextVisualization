@@ -42,8 +42,8 @@ LetterObject [] letterObjects;
 String [] listOfProjectTitles;
 String selectedYear_1 = "2012-2013";
 String selectedYear_2 = "2013-2014";
-// String [] selectedYears = {"2016-2017","2017-2018"};
-String [] selectedYears = {"2012-2013", "2013-2014", "2014-2015", "2015-2016", "2015-2017"};
+String [] selectedYears = {"2016-2017","2017-2018"};
+// String [] selectedYears = {"2012-2013", "2013-2014", "2014-2015", "2015-2016", "2015-2017"};
 JSONArray allData;
 
 // Loading fonts
@@ -60,8 +60,8 @@ int singleScreenDimension = 480;
 // Global letter variables
 int velocityOfChange = 60; // Inverse (smaller numbers == faster) 80 == cycle of 500 frames
 int lettersOnDisplay = 5;
-float letterWidthFactor = 9.3f;
-float lineHeightFactor = 18.7f;
+float letterWidthFactor = 9.1f;
+float lineHeightFactor = 17.5f;
 int fontSize = 15;
 float minTextOpacity = 0.1f;
 
